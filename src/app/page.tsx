@@ -1,18 +1,22 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
+import {
+  Euro, CreditCard, AlertTriangle, Users, TrendingUp, TrendingDown,
+  RefreshCw, Cloud, Database
+} from 'lucide-react';
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, BarChart, Bar
+} from 'recharts';
+import { KPICard } from '@/components/ui/kpi-card';
 import { revisoClient } from '@/lib/reviso-client';
-import { KPIGrid } from '@/components/dashboard/kpi-card';
-import { RevenueChart, CashFlowChart } from '@/components/dashboard/revenue-chart';
-import { DueDatesTable } from '@/components/dashboard/due-dates-table';
-import { CustomersTable } from '@/components/dashboard/customers-table';
-import { VatSummary } from '@/components/dashboard/vat-summary';
-import { CustomerFilter } from '@/components/dashboard/customer-filter';
 import { mockRevenueByMonth, mockCashFlow } from '@/data/mock-data';
 import type { DashboardData, Customer } from '@/types/reviso';
-import { RefreshCw, Database, Cloud } from 'lucide-react';
 
-export default function DashboardPage() {
+const BI_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+
+export default function PanoramicaPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,156 +42,84 @@ export default function DashboardPage() {
     loadData();
   }, []);
 
-  // Filter data based on selected customer
-  const filteredData = useMemo(() => {
+  // Calcola statistiche dai dati Reviso
+  const stats = useMemo(() => {
     if (!data) return null;
-    if (!selectedCustomer) return data;
 
-    // Filter invoices by customer (nested structure: invoice.customer.customerNumber)
-    const filteredInvoices = data.invoices.filter(
-      invoice => invoice.customer.customerNumber === selectedCustomer.customerNumber
-    );
+    const invoices = selectedCustomer
+      ? data.invoices.filter(inv => inv.customer.customerNumber === selectedCustomer.customerNumber)
+      : data.invoices;
 
-    // Filter payment lines by customer (only receivables have customer)
-    const filteredPaymentLines = data.paymentLines.filter(
-      line => line.customer?.customerNumber === selectedCustomer.customerNumber
-    );
+    const paymentLines = selectedCustomer
+      ? data.paymentLines.filter(pl => pl.customer?.customerNumber === selectedCustomer.customerNumber)
+      : data.paymentLines;
 
-    // Only show the selected customer in the list
-    const filteredCustomers = data.customers.filter(
-      c => c.customerNumber === selectedCustomer.customerNumber
-    );
+    // Fatturato totale
+    const fatturato = invoices.reduce((sum, inv) => sum + inv.grossAmount, 0);
 
-    // Recalculate KPIs based on filtered data
-    const totalRevenue = filteredInvoices.reduce((sum, inv) => sum + inv.grossAmount, 0);
-    const paidInvoices = filteredInvoices.filter(inv => inv.status === 'paid');
-    const totalPaid = paidInvoices.reduce((sum, inv) => sum + inv.grossAmount, 0);
-    const outstandingReceivables = filteredPaymentLines
-      .filter(line => line.type === 'receivable')
-      .reduce((sum, line) => sum + line.remainder, 0);
-    const overdueReceivables = filteredPaymentLines
-      .filter(line => line.type === 'receivable' && line.status === 'overdue')
-      .reduce((sum, line) => sum + line.remainder, 0);
+    // Incassato (fatture pagate)
+    const incassato = invoices
+      .filter(inv => inv.status === 'paid')
+      .reduce((sum, inv) => sum + inv.grossAmount, 0);
 
-    const filteredKpis = [
-      {
-        id: 'revenue_customer',
-        name: 'Fatturato Cliente',
-        value: totalRevenue,
-        previousValue: 0,
-        change: 0,
-        changePercent: 0,
-        trend: 'stable' as const,
-        format: 'currency' as const,
-        period: 'totale'
-      },
-      {
-        id: 'paid_customer',
-        name: 'Incassato',
-        value: totalPaid,
-        previousValue: 0,
-        change: 0,
-        changePercent: totalRevenue > 0 ? (totalPaid / totalRevenue) * 100 : 0,
-        trend: 'stable' as const,
-        format: 'currency' as const,
-        period: 'totale'
-      },
-      {
-        id: 'outstanding_customer',
-        name: 'Da Incassare',
-        value: outstandingReceivables,
-        previousValue: 0,
-        change: 0,
-        changePercent: 0,
-        trend: outstandingReceivables > 0 ? 'up' as const : 'stable' as const,
-        format: 'currency' as const,
-        period: 'current'
-      },
-      {
-        id: 'overdue_customer',
-        name: 'Scaduto',
-        value: overdueReceivables,
-        previousValue: 0,
-        change: 0,
-        changePercent: outstandingReceivables > 0 ? (overdueReceivables / outstandingReceivables) * 100 : 0,
-        trend: overdueReceivables > 0 ? 'up' as const : 'stable' as const,
-        format: 'currency' as const,
-        period: 'current'
-      },
-      {
-        id: 'invoice_count_customer',
-        name: 'Fatture Emesse',
-        value: filteredInvoices.length,
-        previousValue: 0,
-        change: 0,
-        changePercent: 0,
-        trend: 'stable' as const,
-        format: 'number' as const,
-        period: 'totale'
-      },
-      {
-        id: 'avg_invoice_customer',
-        name: 'Valore Medio Fattura',
-        value: filteredInvoices.length > 0 ? totalRevenue / filteredInvoices.length : 0,
-        previousValue: 0,
-        change: 0,
-        changePercent: 0,
-        trend: 'stable' as const,
-        format: 'currency' as const,
-        period: 'media'
-      },
-      {
-        id: 'balance_customer',
-        name: 'Saldo Cliente',
-        value: selectedCustomer.balance,
-        previousValue: 0,
-        change: 0,
-        changePercent: 0,
-        trend: selectedCustomer.balance > 0 ? 'up' as const : selectedCustomer.balance < 0 ? 'down' as const : 'stable' as const,
-        format: 'currency' as const,
-        period: 'attuale'
-      },
-      {
-        id: 'collection_rate',
-        name: 'Tasso Incasso',
-        value: totalRevenue > 0 ? (totalPaid / totalRevenue) * 100 : 0,
-        previousValue: 0,
-        change: 0,
-        changePercent: 0,
-        trend: 'stable' as const,
-        format: 'percent' as const,
-        period: 'totale'
+    // Crediti da incassare (receivables)
+    const receivables = revisoClient.getReceivablesSummary(paymentLines);
+
+    // Debiti da pagare (payables)
+    const payables = revisoClient.getPayablesSummary(paymentLines);
+
+    // IVA da versare
+    const ivaVersare = data.vatStatements
+      .filter(v => v.status === 'pending')
+      .reduce((sum, v) => sum + v.netVat, 0);
+
+    // Top clienti per fatturato
+    const fatturatoPerCliente: Record<number, { customer: typeof invoices[0]['customer'], importo: number }> = {};
+    invoices.forEach(inv => {
+      const key = inv.customer.customerNumber;
+      if (!fatturatoPerCliente[key]) {
+        fatturatoPerCliente[key] = { customer: inv.customer, importo: 0 };
       }
-    ];
+      fatturatoPerCliente[key].importo += inv.grossAmount;
+    });
+
+    const topClienti = Object.values(fatturatoPerCliente)
+      .sort((a, b) => b.importo - a.importo)
+      .slice(0, 5);
 
     return {
-      ...data,
-      invoices: filteredInvoices,
-      paymentLines: filteredPaymentLines,
-      customers: filteredCustomers,
-      kpis: filteredKpis
+      fatturato,
+      incassato,
+      crediti: receivables.total,
+      creditiScaduti: receivables.overdue,
+      debiti: payables.total,
+      debitiScaduti: payables.overdue,
+      ivaVersare,
+      clientiTotali: data.customers.length,
+      fattureEmesse: invoices.length,
+      topClienti
     };
   }, [data, selectedCustomer]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <RefreshCw className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Caricamento dati...</p>
+          <RefreshCw className="h-8 w-8 animate-spin text-indigo-600 mx-auto mb-4" />
+          <p className="text-slate-500">Caricamento dati Reviso...</p>
         </div>
       </div>
     );
   }
 
-  if (error || !data) {
+  if (error || !data || !stats) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <p className="text-red-600 mb-4">{error || 'Errore sconosciuto'}</p>
+          <p className="text-rose-600 mb-4">{error || 'Errore nel caricamento'}</p>
           <button
             onClick={loadData}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
           >
             Riprova
           </button>
@@ -197,149 +129,272 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">RevBI Dashboard</h1>
-              <p className="text-sm text-gray-500 mt-1">
-                Business Intelligence per Commercialisti
-              </p>
-            </div>
-            <div className="flex items-center gap-4">
-              {/* Customer Filter */}
-              {data && (
-                <CustomerFilter
-                  customers={data.customers}
-                  selectedCustomer={selectedCustomer}
-                  onSelectCustomer={setSelectedCustomer}
-                />
-              )}
-              {/* Data source indicators */}
-              <div className="flex items-center gap-2 text-xs">
-                <span className="flex items-center gap-1 px-2 py-1 rounded bg-green-100 text-green-800">
-                  <Cloud className="h-3 w-3" />
-                  API Live
-                </span>
-                <span className="flex items-center gap-1 px-2 py-1 rounded bg-yellow-100 text-yellow-800">
-                  <Database className="h-3 w-3" />
-                  Mock Data
-                </span>
-              </div>
-              <button
-                onClick={loadData}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Aggiorna
-              </button>
-              {lastUpdate && (
-                <span className="text-xs text-gray-500">
-                  Ultimo agg: {lastUpdate.toLocaleTimeString('it-IT')}
-                </span>
-              )}
-            </div>
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Panoramica Studio</h1>
+          <p className="text-slate-500 text-sm">Dati in tempo reale da Reviso API</p>
+        </div>
+        <div className="flex items-center gap-3">
+          {/* Data source indicators */}
+          <div className="flex items-center gap-2 text-xs">
+            <span className="flex items-center gap-1 px-2 py-1 rounded bg-green-100 text-green-800">
+              <Cloud className="h-3 w-3" />
+              API Reviso
+            </span>
+            <span className="flex items-center gap-1 px-2 py-1 rounded bg-amber-100 text-amber-800">
+              <Database className="h-3 w-3" />
+              Demo
+            </span>
           </div>
+          <button
+            onClick={loadData}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Aggiorna
+          </button>
+          {lastUpdate && (
+            <span className="text-xs text-slate-400">
+              {lastUpdate.toLocaleTimeString('it-IT')}
+            </span>
+          )}
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Selected Customer Banner */}
-        {selectedCustomer && (
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
-            <div>
-              <span className="text-sm text-blue-600 font-medium">Visualizzazione filtrata per:</span>
-              <span className="ml-2 text-blue-900 font-semibold">{selectedCustomer.name}</span>
-              <span className="ml-2 text-blue-600 text-sm">#{selectedCustomer.customerNumber}</span>
-            </div>
-            <button
-              onClick={() => setSelectedCustomer(null)}
-              className="text-blue-600 hover:text-blue-800 text-sm underline"
-            >
-              Mostra tutti
-            </button>
+      {/* Selected Customer Banner */}
+      {selectedCustomer && (
+        <div className="mb-6 p-4 bg-indigo-50 border border-indigo-200 rounded-xl flex items-center justify-between">
+          <div>
+            <span className="text-sm text-indigo-600 font-medium">Filtrato per:</span>
+            <span className="ml-2 text-indigo-900 font-semibold">{selectedCustomer.name}</span>
           </div>
-        )}
-
-        {/* KPIs */}
-        <section className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">KPI Principali</h2>
-          <KPIGrid kpis={filteredData!.kpis} />
-        </section>
-
-        {/* Charts Row */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <RevenueChart data={mockRevenueByMonth} />
-          <CashFlowChart data={mockCashFlow} />
-        </section>
-
-        {/* Tables Row */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <DueDatesTable paymentLines={filteredData!.paymentLines} type="receivable" limit={5} />
-          <DueDatesTable paymentLines={filteredData!.paymentLines} type="payable" limit={5} />
-        </section>
-
-        {/* Bottom Row */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <CustomersTable
-            customers={filteredData!.customers}
-            limit={selectedCustomer ? 1 : 5}
-            onSelectCustomer={setSelectedCustomer}
-          />
-          <VatSummary vatStatements={filteredData!.vatStatements} vatAccounts={filteredData!.vatAccounts} />
-        </section>
-
-        {/* Debug Info */}
-        <section className="mt-8 p-4 bg-gray-100 rounded-lg">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Debug Info - Sorgente Dati</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-gray-600">
-            <div>
-              <span className="font-medium">Clienti:</span> {data.customers.length}
-              <span className="ml-1 text-green-600">(API)</span>
-            </div>
-            <div>
-              <span className="font-medium">Fornitori:</span> {data.suppliers.length}
-              <span className="ml-1 text-green-600">(API)</span>
-            </div>
-            <div>
-              <span className="font-medium">Fatture:</span> {data.invoices.length}
-              <span className="ml-1 text-yellow-600">(Mock)</span>
-            </div>
-            <div>
-              <span className="font-medium">Scadenze:</span> {data.paymentLines.length}
-              <span className="ml-1 text-yellow-600">(Mock)</span>
-            </div>
-            <div>
-              <span className="font-medium">Conti IVA:</span> {data.vatAccounts.length}
-              <span className="ml-1 text-green-600">(API)</span>
-            </div>
-            <div>
-              <span className="font-medium">Liquidazioni IVA:</span> {data.vatStatements.length}
-              <span className="ml-1 text-yellow-600">(Mock)</span>
-            </div>
-            <div>
-              <span className="font-medium">KPIs:</span> {data.kpis.length}
-              <span className="ml-1 text-yellow-600">(Mock)</span>
-            </div>
-            <div>
-              <span className="font-medium">Conti:</span> {data.accounts.length}
-              <span className="ml-1 text-green-600">(API)</span>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <p className="text-center text-sm text-gray-500">
-            RevBI - Business Intelligence per Commercialisti | Powered by Reviso API
-          </p>
+          <button
+            onClick={() => setSelectedCustomer(null)}
+            className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+          >
+            Rimuovi filtro
+          </button>
         </div>
-      </footer>
-    </div>
+      )}
+
+      {/* KPI Row 1 - Fatturazione */}
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <KPICard
+          title="Fatturato"
+          value={`€${(stats.fatturato / 1000).toFixed(1)}k`}
+          detail={`${stats.fattureEmesse} fatture emesse`}
+          icon={Euro}
+          trend={12.5}
+          color="indigo"
+        />
+        <KPICard
+          title="Incassato"
+          value={`€${(stats.incassato / 1000).toFixed(1)}k`}
+          detail={`${stats.fatturato > 0 ? ((stats.incassato / stats.fatturato) * 100).toFixed(0) : 0}% del fatturato`}
+          icon={CreditCard}
+          trend={8.2}
+          color="emerald"
+        />
+        <KPICard
+          title="Crediti Aperti"
+          value={`€${(stats.crediti / 1000).toFixed(1)}k`}
+          detail={stats.creditiScaduti > 0 ? `€${(stats.creditiScaduti / 1000).toFixed(1)}k scaduti` : 'Nessuno scaduto'}
+          icon={stats.creditiScaduti > 0 ? AlertTriangle : TrendingUp}
+          color={stats.creditiScaduti > 0 ? 'amber' : 'slate'}
+        />
+        <KPICard
+          title="Clienti Attivi"
+          value={stats.clientiTotali}
+          detail="Nel portafoglio"
+          icon={Users}
+          trend={3}
+          color="indigo"
+        />
+      </section>
+
+      {/* KPI Row 2 - Passivo e IVA */}
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <KPICard
+          title="Debiti da Pagare"
+          value={`€${(stats.debiti / 1000).toFixed(1)}k`}
+          detail={stats.debitiScaduti > 0 ? `€${(stats.debitiScaduti / 1000).toFixed(1)}k scaduti` : 'Nessuno scaduto'}
+          icon={stats.debitiScaduti > 0 ? AlertTriangle : TrendingDown}
+          color={stats.debitiScaduti > 0 ? 'rose' : 'slate'}
+        />
+        <KPICard
+          title="IVA da Versare"
+          value={`€${stats.ivaVersare.toLocaleString('it-IT')}`}
+          detail="Prossima liquidazione"
+          icon={Euro}
+          color="amber"
+        />
+        <KPICard
+          title="Cash Position"
+          value={`€${((stats.crediti - stats.debiti) / 1000).toFixed(1)}k`}
+          detail="Crediti - Debiti"
+          icon={stats.crediti > stats.debiti ? TrendingUp : TrendingDown}
+          color={stats.crediti > stats.debiti ? 'emerald' : 'rose'}
+        />
+        <KPICard
+          title="Valore Medio Fattura"
+          value={`€${stats.fattureEmesse > 0 ? (stats.fatturato / stats.fattureEmesse).toFixed(0) : 0}`}
+          detail="Per fattura"
+          icon={Euro}
+        />
+      </section>
+
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {/* Area Chart - Fatturato/Incassi */}
+        <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <h3 className="font-semibold text-slate-800 mb-6">Andamento Fatturato e Incassi</h3>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={mockRevenueByMonth}>
+                <defs>
+                  <linearGradient id="colorFatt" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.1} />
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="colorInc" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.1} />
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={(v) => `€${(v / 1000).toFixed(0)}k`} />
+                <Tooltip formatter={(value) => [`€${Number(value).toLocaleString('it-IT')}`, '']} />
+                <Area type="monotone" dataKey="fatturato" stroke="#6366f1" strokeWidth={2} fill="url(#colorFatt)" name="Fatturato" />
+                <Area type="monotone" dataKey="incassi" stroke="#10b981" strokeWidth={2} fill="url(#colorInc)" name="Incassi" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Cash Flow */}
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <h3 className="font-semibold text-slate-800 mb-6">Cash Flow Settimanale</h3>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={mockCashFlow}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} tickFormatter={(v) => `€${(v / 1000).toFixed(0)}k`} />
+                <Tooltip formatter={(value) => [`€${Number(value).toLocaleString('it-IT')}`, '']} />
+                <Bar dataKey="entrate" fill="#10b981" radius={[4, 4, 0, 0]} name="Entrate" />
+                <Bar dataKey="uscite" fill="#f59e0b" radius={[4, 4, 0, 0]} name="Uscite" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Top Clienti */}
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <h3 className="font-semibold text-slate-800 mb-4">Top 5 Clienti per Fatturato</h3>
+          <div className="space-y-4">
+            {stats.topClienti.map((item, i) => {
+              const maxImp = Math.max(...stats.topClienti.map(x => x.importo));
+              const pct = (item.importo / maxImp) * 100;
+              return (
+                <div
+                  key={i}
+                  className="cursor-pointer hover:bg-slate-50 p-2 rounded-lg -mx-2 transition-colors"
+                  onClick={() => {
+                    const customer = data.customers.find(c => c.customerNumber === item.customer.customerNumber);
+                    if (customer) setSelectedCustomer(customer);
+                  }}
+                >
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="font-medium text-slate-700 truncate">
+                      {item.customer.name}
+                    </span>
+                    <span className="text-slate-500">€{item.importo.toLocaleString('it-IT')}</span>
+                  </div>
+                  <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full"
+                      style={{ width: `${pct}%`, backgroundColor: BI_COLORS[i] }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Scadenze Imminenti */}
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <h3 className="font-semibold text-slate-800 mb-4">Scadenze Imminenti</h3>
+          <div className="space-y-3 max-h-[280px] overflow-y-auto">
+            {data.paymentLines
+              .filter(pl => pl.remainder > 0)
+              .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+              .slice(0, 6)
+              .map((pl, i) => {
+                const isOverdue = pl.status === 'overdue';
+                const isReceivable = pl.type === 'receivable';
+                return (
+                  <div
+                    key={i}
+                    className={`p-3 rounded-xl ${
+                      isOverdue ? 'bg-rose-50' : 'bg-white border border-slate-100'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
+                          isReceivable ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                        }`}>
+                          {isReceivable ? 'CREDITO' : 'DEBITO'}
+                        </span>
+                        <p className="text-sm font-medium text-slate-700 mt-1">
+                          {isReceivable ? pl.customer?.name : pl.supplier?.name}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className={`text-sm font-semibold ${isOverdue ? 'text-rose-600' : 'text-slate-700'}`}>
+                          €{pl.remainder.toLocaleString('it-IT')}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          {new Date(pl.dueDate).toLocaleDateString('it-IT')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      </div>
+
+      {/* Debug Info */}
+      <section className="mt-8 p-4 bg-slate-100 rounded-xl">
+        <h3 className="text-sm font-medium text-slate-700 mb-2">Sorgente Dati</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-slate-600">
+          <div>
+            <span className="font-medium">Clienti:</span> {data.customers.length}
+            <span className="ml-1 text-green-600">(API)</span>
+          </div>
+          <div>
+            <span className="font-medium">Fornitori:</span> {data.suppliers.length}
+            <span className="ml-1 text-green-600">(API)</span>
+          </div>
+          <div>
+            <span className="font-medium">Fatture:</span> {data.invoices.length}
+            <span className="ml-1 text-amber-600">(Mock)</span>
+          </div>
+          <div>
+            <span className="font-medium">Scadenze:</span> {data.paymentLines.length}
+            <span className="ml-1 text-amber-600">(Mock)</span>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }
