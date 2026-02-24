@@ -26,7 +26,7 @@ export function DataTable<T>({
   const displayData = data.slice(0, limit);
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-xl sm:rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="bg-slate-50 border-b border-slate-200">
@@ -34,7 +34,7 @@ export function DataTable<T>({
               {columns.map((col, i) => (
                 <th
                   key={i}
-                  className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                  className="px-3 sm:px-6 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap"
                 >
                   {col.header}
                 </th>
@@ -49,7 +49,7 @@ export function DataTable<T>({
                 onClick={() => onRowClick?.(row)}
               >
                 {columns.map((col, j) => (
-                  <td key={j} className="px-6 py-4 text-sm text-slate-700">
+                  <td key={j} className="px-3 sm:px-6 py-2.5 sm:py-4 text-xs sm:text-sm text-slate-700 whitespace-nowrap">
                     {col.render
                       ? col.render(row)
                       : String((row as Record<string, unknown>)[col.accessor] ?? '')}
@@ -60,8 +60,8 @@ export function DataTable<T>({
           </tbody>
         </table>
       </div>
-      <div className="px-4 sm:px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <p className="text-sm text-slate-500">
+      <div className="px-3 sm:px-6 py-3 sm:py-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
+        <p className="text-xs sm:text-sm text-slate-500">
           Mostrando {Math.min(limit, data.length)} di {data.length}
         </p>
       </div>

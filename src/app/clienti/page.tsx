@@ -128,24 +128,24 @@ export default function ClientiPage() {
   return (
     <>
       {/* Header */}
-      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Anagrafica Clienti</h1>
-          <p className="text-slate-500 text-sm">Dati da Reviso API</p>
+          <h1 className="text-lg sm:text-2xl font-bold text-slate-800">Anagrafica Clienti</h1>
+          <p className="text-slate-500 text-xs sm:text-sm">Dati da Reviso API</p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-2">
+        <div className="w-full sm:w-auto">
           <input
             type="text"
             placeholder="Cerca cliente..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="px-4 py-2 border border-slate-200 rounded-lg text-sm w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="px-3 sm:px-4 py-2 border border-slate-200 rounded-lg text-sm w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
       </header>
 
       {/* KPIs */}
-      <section className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <section className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
         <KPICard
           title="Clienti Totali"
           value={filtered.length}

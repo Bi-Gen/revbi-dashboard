@@ -88,16 +88,16 @@ export default function PratichePage() {
   return (
     <>
       {/* Header */}
-      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Gestione Pratiche</h1>
-          <p className="text-slate-500 text-sm">Stato e avanzamento delle pratiche</p>
+          <h1 className="text-lg sm:text-2xl font-bold text-slate-800">Gestione Pratiche</h1>
+          <p className="text-slate-500 text-xs sm:text-sm">Stato e avanzamento delle pratiche</p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex gap-2 w-full sm:w-auto">
           <select
             value={filterTipo}
             onChange={(e) => setFilterTipo(e.target.value)}
-            className="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="px-3 sm:px-4 py-2 border border-slate-200 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1 sm:flex-none"
           >
             <option value="All">Tutti i tipi</option>
             {tipi.map(t => <option key={t} value={t}>{t}</option>)}
@@ -105,7 +105,7 @@ export default function PratichePage() {
           <select
             value={filterStato}
             onChange={(e) => setFilterStato(e.target.value)}
-            className="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="px-3 sm:px-4 py-2 border border-slate-200 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1 sm:flex-none"
           >
             <option value="All">Tutti gli stati</option>
             {stati.map(s => (
@@ -118,7 +118,7 @@ export default function PratichePage() {
       </header>
 
       {/* KPIs */}
-      <section className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <section className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
         <KPICard
           title="Totale Pratiche"
           value={pratiche.length}

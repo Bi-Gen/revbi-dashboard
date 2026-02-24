@@ -180,7 +180,7 @@ export default function PanoramicaPage() {
       )}
 
       {/* KPI Row 1 - Fatturazione */}
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <section className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
         <KPICard
           title="Fatturato"
           value={`€${(stats.fatturato / 1000).toFixed(1)}k`}
@@ -215,7 +215,7 @@ export default function PanoramicaPage() {
       </section>
 
       {/* KPI Row 2 - Passivo e IVA */}
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <section className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
         <KPICard
           title="Debiti da Pagare"
           value={`€${(stats.debiti / 1000).toFixed(1)}k`}
@@ -246,11 +246,11 @@ export default function PanoramicaPage() {
       </section>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {/* Area Chart - Fatturato/Incassi */}
-        <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 className="font-semibold text-slate-800 mb-6">Andamento Fatturato e Incassi</h3>
-          <div className="h-[300px]">
+        <div className="lg:col-span-2 bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <h3 className="font-semibold text-slate-800 mb-4 sm:mb-6 text-sm sm:text-base">Andamento Fatturato e Incassi</h3>
+          <div className="h-[250px] sm:h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={mockRevenueByMonth}>
                 <defs>
@@ -275,9 +275,9 @@ export default function PanoramicaPage() {
         </div>
 
         {/* Cash Flow */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 className="font-semibold text-slate-800 mb-6">Cash Flow Settimanale</h3>
-          <div className="h-[300px]">
+        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <h3 className="font-semibold text-slate-800 mb-4 sm:mb-6 text-sm sm:text-base">Cash Flow Settimanale</h3>
+          <div className="h-[250px] sm:h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={mockCashFlow}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -294,14 +294,14 @@ export default function PanoramicaPage() {
 
       {/* Accounting Totals from Reviso API */}
       {data.accountTotals.length > 0 && (
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-8">
+        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 sm:mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-slate-800">Totali Contabili</h3>
+            <h3 className="font-semibold text-slate-800 text-sm sm:text-base">Totali Contabili</h3>
             <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded">
               API /accounting-years/totals
             </span>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-4">
             {data.accountTotals
               .filter(t => Math.abs(t.totalInBaseCurrency) > 100)
               .sort((a, b) => Math.abs(b.totalInBaseCurrency) - Math.abs(a.totalInBaseCurrency))
@@ -325,10 +325,10 @@ export default function PanoramicaPage() {
       )}
 
       {/* Bottom Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Top Clienti */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 className="font-semibold text-slate-800 mb-4">Top 5 Clienti per Fatturato</h3>
+        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <h3 className="font-semibold text-slate-800 mb-4 text-sm sm:text-base">Top 5 Clienti per Fatturato</h3>
           <div className="space-y-4">
             {stats.topClienti.map((item, i) => {
               const maxImp = Math.max(...stats.topClienti.map(x => x.importo));
@@ -361,8 +361,8 @@ export default function PanoramicaPage() {
         </div>
 
         {/* Scadenze Imminenti */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 className="font-semibold text-slate-800 mb-4">Scadenze Imminenti</h3>
+        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <h3 className="font-semibold text-slate-800 mb-4 text-sm sm:text-base">Scadenze Imminenti</h3>
           <div className="space-y-3 max-h-[280px] overflow-y-auto">
             {data.paymentLines
               .filter(pl => pl.remainder > 0)
@@ -406,9 +406,9 @@ export default function PanoramicaPage() {
       </div>
 
       {/* Debug Info */}
-      <section className="mt-8 p-4 bg-slate-100 rounded-xl">
-        <h3 className="text-sm font-medium text-slate-700 mb-2">Sorgente Dati</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-xs text-slate-600">
+      <section className="mt-6 sm:mt-8 p-3 sm:p-4 bg-slate-100 rounded-xl">
+        <h3 className="text-xs sm:text-sm font-medium text-slate-700 mb-2">Sorgente Dati</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-4 text-xs text-slate-600">
           <div>
             <span className="font-medium">Clienti:</span> {data.customers.length}
             <span className="ml-1 text-green-600">(API)</span>

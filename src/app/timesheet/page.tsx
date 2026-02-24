@@ -73,15 +73,15 @@ export default function TimesheetPage() {
   return (
     <>
       {/* Header */}
-      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Timesheet</h1>
-          <p className="text-slate-500 text-sm">Gestione ore e produttivita</p>
+          <h1 className="text-lg sm:text-2xl font-bold text-slate-800">Timesheet</h1>
+          <p className="text-slate-500 text-xs sm:text-sm">Gestione ore e produttivita</p>
         </div>
         <select
           value={filterCollab}
           onChange={(e) => setFilterCollab(e.target.value)}
-          className="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="px-3 sm:px-4 py-2 border border-slate-200 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-auto"
         >
           <option value="All">Tutti i collaboratori</option>
           {collaboratori.map(c => (
@@ -91,7 +91,7 @@ export default function TimesheetPage() {
       </header>
 
       {/* KPIs */}
-      <section className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <section className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
         <KPICard
           title="Ore Totali"
           value={stats.totOre.toFixed(1)}
@@ -120,15 +120,15 @@ export default function TimesheetPage() {
         />
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Table */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 order-2 lg:order-1">
           <DataTable columns={columns} data={filtered} />
         </div>
 
         {/* Utilizzo Collaboratori */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 className="font-semibold text-slate-800 mb-4">Utilizzo Collaboratori</h3>
+        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm order-1 lg:order-2">
+          <h3 className="font-semibold text-slate-800 mb-4 text-sm sm:text-base">Utilizzo Collaboratori</h3>
           <div className="space-y-4">
             {stats.collabStats.map((c, i) => (
               <div key={c.id}>

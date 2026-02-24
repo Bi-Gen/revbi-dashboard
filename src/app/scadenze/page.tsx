@@ -78,15 +78,15 @@ export default function ScadenzePage() {
   return (
     <>
       {/* Header */}
-      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Scadenzario</h1>
-          <p className="text-slate-500 text-sm">Crediti e debiti da Reviso API</p>
+          <h1 className="text-lg sm:text-2xl font-bold text-slate-800">Scadenzario</h1>
+          <p className="text-slate-500 text-xs sm:text-sm">Crediti e debiti da Reviso API</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
           <button
             onClick={() => setFilterType('all')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
               filterType === 'all'
                 ? 'bg-indigo-600 text-white'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -96,7 +96,7 @@ export default function ScadenzePage() {
           </button>
           <button
             onClick={() => setFilterType('receivable')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
               filterType === 'receivable'
                 ? 'bg-emerald-600 text-white'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -106,7 +106,7 @@ export default function ScadenzePage() {
           </button>
           <button
             onClick={() => setFilterType('payable')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
               filterType === 'payable'
                 ? 'bg-amber-600 text-white'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -118,7 +118,7 @@ export default function ScadenzePage() {
       </header>
 
       {/* KPIs */}
-      <section className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <section className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
         <KPICard
           title="Crediti da Incassare"
           value={`€${(data.receivables.total / 1000).toFixed(1)}k`}
@@ -149,10 +149,10 @@ export default function ScadenzePage() {
         />
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Scadenze Attive (Crediti) */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
+        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2 text-sm sm:text-base">
             <span className="w-3 h-3 bg-emerald-500 rounded-full"></span>
             Crediti da Incassare
           </h3>
@@ -214,8 +214,8 @@ export default function ScadenzePage() {
         </div>
 
         {/* Scadenze Passive (Debiti) */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
+        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2 text-sm sm:text-base">
             <span className="w-3 h-3 bg-amber-500 rounded-full"></span>
             Debiti da Pagare
           </h3>
@@ -278,12 +278,12 @@ export default function ScadenzePage() {
       </div>
 
       {/* VAT Section */}
-      <div className="mt-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-        <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-indigo-600" />
+      <div className="mt-4 sm:mt-6 bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2 text-sm sm:text-base">
+          <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
           Liquidazioni IVA
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
           {vatStatements.map((vat, i) => (
             <div
               key={i}

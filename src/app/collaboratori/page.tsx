@@ -39,13 +39,13 @@ export default function CollaboratoriPage() {
   return (
     <>
       {/* Header */}
-      <header className="mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Collaboratori</h1>
-        <p className="text-slate-500 text-sm">Performance e produttivita del team</p>
+      <header className="mb-4 sm:mb-6">
+        <h1 className="text-lg sm:text-2xl font-bold text-slate-800">Collaboratori</h1>
+        <p className="text-slate-500 text-xs sm:text-sm">Performance e produttivita del team</p>
       </header>
 
       {/* KPIs */}
-      <section className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <section className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
         <KPICard
           title="Team"
           value={collaboratori.length}
@@ -74,8 +74,51 @@ export default function CollaboratoriPage() {
         />
       </section>
 
-      {/* Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      {/* Mobile Cards */}
+      <div className="lg:hidden space-y-3">
+        {stats.map((c) => (
+          <div key={c.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="font-semibold text-slate-800">{c.nome}</p>
+                <p className="text-xs text-slate-500">{c.ruolo}</p>
+              </div>
+              <span
+                className={`px-2 py-1 text-xs font-medium rounded-full ${
+                  parseInt(c.utilizzo) > 100
+                    ? 'bg-rose-100 text-rose-700'
+                    : parseInt(c.utilizzo) > 80
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : 'bg-amber-100 text-amber-700'
+                }`}
+              >
+                {c.utilizzo}%
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p className="text-slate-500 text-xs">Ore</p>
+                <p className="font-medium text-slate-800">{c.ore.toFixed(1)}h</p>
+              </div>
+              <div>
+                <p className="text-slate-500 text-xs">Tariffa</p>
+                <p className="font-medium text-slate-800">€{c.tariffaOraria}/h</p>
+              </div>
+              <div>
+                <p className="text-slate-500 text-xs">Revenue</p>
+                <p className="font-semibold text-emerald-600">€{c.revenue.toLocaleString('it-IT')}</p>
+              </div>
+              <div>
+                <p className="text-slate-500 text-xs">Clienti / Fatt.</p>
+                <p className="font-medium text-slate-800">{c.numClienti} / €{(c.fatturatoClienti / 1000).toFixed(1)}k</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop Table */}
+      <div className="hidden lg:block bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-slate-50 border-b border-slate-200">
