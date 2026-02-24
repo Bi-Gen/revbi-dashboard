@@ -148,8 +148,60 @@ export default function PratichePage() {
         />
       </section>
 
-      {/* Table */}
-      <DataTable columns={columns} data={filtered} />
+      {/* Mobile Cards */}
+      <div className="lg:hidden space-y-3">
+        {filtered.slice(0, 15).map((p) => (
+          <div key={p.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <p className="font-semibold text-slate-800">{p.cliente}</p>
+                <p className="text-xs text-slate-500">#{p.id} - {p.descrizione}</p>
+              </div>
+              <span
+                className={`px-2 py-1 text-xs font-medium rounded-full ${
+                  p.stato === 'completata'
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : p.stato === 'in_corso'
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'bg-slate-100 text-slate-700'
+                }`}
+              >
+                {p.stato === 'in_corso' ? 'In corso' : p.stato === 'da_iniziare' ? 'Da iniziare' : 'Completata'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span
+                className={`px-2 py-1 text-xs rounded-full ${
+                  p.tipo === 'Bilancio'
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : p.tipo === 'Contabilita'
+                    ? 'bg-blue-100 text-blue-700'
+                    : p.tipo === 'Dichiarazioni'
+                    ? 'bg-amber-100 text-amber-700'
+                    : 'bg-purple-100 text-purple-700'
+                }`}
+              >
+                {p.tipo}
+              </span>
+              {p.scadenza && (
+                <span className="text-xs text-slate-500">
+                  Scad: {new Date(p.scadenza).toLocaleDateString('it-IT')}
+                </span>
+              )}
+            </div>
+          </div>
+        ))}
+        {filtered.length > 15 && (
+          <p className="text-center text-sm text-slate-500 py-2">
+            Mostrando 15 di {filtered.length} pratiche
+          </p>
+        )}
+      </div>
+
+      {/* Desktop Table */}
+      <div className="hidden lg:block">
+        <DataTable columns={columns} data={filtered} />
+      </div>
     </>
   );
 }

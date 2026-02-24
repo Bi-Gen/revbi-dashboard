@@ -175,8 +175,54 @@ export default function ClientiPage() {
         />
       </section>
 
-      {/* Table */}
-      <DataTable columns={columns} data={filtered} />
+      {/* Mobile Cards */}
+      <div className="lg:hidden space-y-3">
+        {filtered.slice(0, 15).map((c) => (
+          <div key={c.customerNumber} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <p className="font-semibold text-slate-800">{c.name}</p>
+                <p className="text-xs text-slate-500">{c.city}</p>
+              </div>
+              {c.crediti > 0 && (
+                <span className="px-2 py-1 text-xs font-medium rounded-full bg-rose-100 text-rose-700">
+                  €{c.crediti.toLocaleString('it-IT')} crediti
+                </span>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p className="text-slate-500 text-xs">Fatturato</p>
+                <p className="font-medium text-slate-800">€{c.fatturato.toLocaleString('it-IT')}</p>
+              </div>
+              <div>
+                <p className="text-slate-500 text-xs">Incassato</p>
+                <p className="font-medium text-emerald-600">€{c.incassato.toLocaleString('it-IT')}</p>
+              </div>
+              <div>
+                <p className="text-slate-500 text-xs">Saldo Conto</p>
+                <p className={`font-medium ${c.balance > 0 ? 'text-emerald-600' : c.balance < 0 ? 'text-rose-600' : 'text-slate-800'}`}>
+                  €{c.balance.toLocaleString('it-IT')}
+                </p>
+              </div>
+              <div>
+                <p className="text-slate-500 text-xs">Valuta</p>
+                <p className="font-medium text-slate-800">{c.currency}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+        {filtered.length > 15 && (
+          <p className="text-center text-sm text-slate-500 py-2">
+            Mostrando 15 di {filtered.length} clienti
+          </p>
+        )}
+      </div>
+
+      {/* Desktop Table */}
+      <div className="hidden lg:block">
+        <DataTable columns={columns} data={filtered} />
+      </div>
     </>
   );
 }
