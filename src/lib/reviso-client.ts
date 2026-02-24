@@ -108,6 +108,7 @@ class RevisoClient {
   // ========== COMPUTED DATA ==========
 
   async getDashboardData() {
+    // First fetch basic data and accounting years
     const [
       customers,
       suppliers,
@@ -116,7 +117,9 @@ class RevisoClient {
       vatAccounts,
       vatStatements,
       kpis,
-      accounts
+      accounts,
+      accountingYears,
+      companyInfo
     ] = await Promise.all([
       this.getCustomers(),
       this.getSuppliers(),
@@ -125,8 +128,20 @@ class RevisoClient {
       this.getVatAccounts(),
       this.getVatStatements(),
       this.getKPIs(),
-      this.getAccounts()
+      this.getAccounts(),
+      this.getAccountingYears(),
+      this.getSelf()
     ]);
+
+    // Get totals for the current (most recent non-closed) year
+    let accountTotals: { account: { accountNumber: number }; totalInBaseCurrency: number }[] = [];
+    if (accountingYears.length > 0) {
+      // Find the most recent open year, or the most recent year if all are closed
+      const currentYear = accountingYears.find(y => !y.closed) || accountingYears[0];
+      if (currentYear) {
+        accountTotals = await this.getAccountTotals(currentYear.year);
+      }
+    }
 
     return {
       customers,
@@ -136,7 +151,10 @@ class RevisoClient {
       vatAccounts,
       vatStatements,
       kpis,
-      accounts
+      accounts,
+      accountingYears,
+      accountTotals,
+      companyInfo
     };
   }
 

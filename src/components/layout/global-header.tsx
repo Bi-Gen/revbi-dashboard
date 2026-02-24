@@ -1,17 +1,39 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Menu, Building2 } from 'lucide-react';
-import { studioData } from '@/data/studio-data';
+import { revisoClient } from '@/lib/reviso-client';
 
 interface GlobalHeaderProps {
   onMenuClick: () => void;
+}
+
+interface CompanyInfo {
+  name: string;
+  vatNumber: string;
+  currency: string;
 }
 
 const dayNames = ['Domenica', 'Lunedi', 'Martedi', 'Mercoledi', 'Giovedi', 'Venerdi', 'Sabato'];
 const monthNames = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
 
 export function GlobalHeader({ onMenuClick }: GlobalHeaderProps) {
+  const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
   const today = new Date();
+
+  useEffect(() => {
+    const loadCompanyInfo = async () => {
+      const data = await revisoClient.getSelf();
+      if (data) {
+        setCompanyInfo({
+          name: data.company.name,
+          vatNumber: data.company.vatNumber,
+          currency: data.settings.baseCurrency
+        });
+      }
+    };
+    loadCompanyInfo();
+  }, []);
 
   return (
     <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
@@ -35,17 +57,17 @@ export function GlobalHeader({ onMenuClick }: GlobalHeaderProps) {
 
         <div className="h-8 w-px bg-slate-200 hidden sm:block" />
 
-        {/* Studio info */}
+        {/* Company info from Reviso API /self */}
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center">
             <Building2 className="w-4 h-4 text-white" />
           </div>
           <div className="text-right">
             <p className="text-sm font-semibold text-slate-800 hidden sm:block">
-              {studioData.studio.name}
+              {companyInfo?.name || 'Caricamento...'}
             </p>
             <p className="text-xs text-slate-400 hidden sm:block">
-              {studioData.studio.city}
+              {companyInfo ? `P.IVA: ${companyInfo.vatNumber}` : ''}
             </p>
           </div>
         </div>

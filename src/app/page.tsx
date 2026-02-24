@@ -292,6 +292,38 @@ export default function PanoramicaPage() {
         </div>
       </div>
 
+      {/* Accounting Totals from Reviso API */}
+      {data.accountTotals.length > 0 && (
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-slate-800">Totali Contabili</h3>
+            <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded">
+              API /accounting-years/totals
+            </span>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {data.accountTotals
+              .filter(t => Math.abs(t.totalInBaseCurrency) > 100)
+              .sort((a, b) => Math.abs(b.totalInBaseCurrency) - Math.abs(a.totalInBaseCurrency))
+              .slice(0, 12)
+              .map((total, i) => {
+                const account = data.accounts.find(a => a.accountNumber === total.account.accountNumber);
+                const isPositive = total.totalInBaseCurrency >= 0;
+                return (
+                  <div key={i} className="p-3 bg-slate-50 rounded-lg">
+                    <p className="text-xs text-slate-500 truncate" title={account?.name || `Conto ${total.account.accountNumber}`}>
+                      {account?.name || `#${total.account.accountNumber}`}
+                    </p>
+                    <p className={`text-sm font-semibold ${isPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
+                      €{total.totalInBaseCurrency.toLocaleString('it-IT', { maximumFractionDigits: 0 })}
+                    </p>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      )}
+
       {/* Bottom Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Clienti */}
@@ -376,13 +408,29 @@ export default function PanoramicaPage() {
       {/* Debug Info */}
       <section className="mt-8 p-4 bg-slate-100 rounded-xl">
         <h3 className="text-sm font-medium text-slate-700 mb-2">Sorgente Dati</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-slate-600">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-xs text-slate-600">
           <div>
             <span className="font-medium">Clienti:</span> {data.customers.length}
             <span className="ml-1 text-green-600">(API)</span>
           </div>
           <div>
             <span className="font-medium">Fornitori:</span> {data.suppliers.length}
+            <span className="ml-1 text-green-600">(API)</span>
+          </div>
+          <div>
+            <span className="font-medium">Conti:</span> {data.accounts.length}
+            <span className="ml-1 text-green-600">(API)</span>
+          </div>
+          <div>
+            <span className="font-medium">Anni:</span> {data.accountingYears.length}
+            <span className="ml-1 text-green-600">(API)</span>
+          </div>
+          <div>
+            <span className="font-medium">Totali:</span> {data.accountTotals.length}
+            <span className="ml-1 text-green-600">(API)</span>
+          </div>
+          <div>
+            <span className="font-medium">Azienda:</span> {data.companyInfo ? '✓' : '-'}
             <span className="ml-1 text-green-600">(API)</span>
           </div>
           <div>
@@ -394,6 +442,15 @@ export default function PanoramicaPage() {
             <span className="ml-1 text-amber-600">(Mock)</span>
           </div>
         </div>
+        {data.companyInfo && (
+          <div className="mt-3 pt-3 border-t border-slate-200">
+            <p className="text-xs text-slate-600">
+              <span className="font-medium">Azienda:</span> {data.companyInfo.company.name} |
+              <span className="ml-2 font-medium">P.IVA:</span> {data.companyInfo.company.vatNumber} |
+              <span className="ml-2 font-medium">Valuta:</span> {data.companyInfo.settings.baseCurrency}
+            </p>
+          </div>
+        )}
       </section>
     </>
   );

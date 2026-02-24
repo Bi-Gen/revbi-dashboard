@@ -144,6 +144,26 @@ export interface AccountingYear {
   closed: boolean;
 }
 
+export interface AccountTotal {
+  account: {
+    accountNumber: number;
+    name?: string;
+  };
+  totalInBaseCurrency: number;
+}
+
+export interface CompanyInfo {
+  company: {
+    name: string;
+    email: string;
+    vatNumber: string;
+  };
+  settings: {
+    baseCurrency: string;
+    vatReportingFrequency: string;
+  };
+}
+
 export interface DashboardData {
   customers: Customer[];
   suppliers: Supplier[];
@@ -153,4 +173,7 @@ export interface DashboardData {
   vatStatements: VatStatement[];
   kpis: KPI[];
   accounts: Account[];
+  accountingYears: AccountingYear[];
+  accountTotals: AccountTotal[];
+  companyInfo: CompanyInfo | null;
 }
